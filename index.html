@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPG Card Game</title>
+
+<style>
+    * { box-sizing: border-box; }
+
+    :root {
+        --bg: #151313;
+        --panel: #211e1e;
+        --panel2: #292525;
+        --border: #4a4141;
+        --text: #f1eeee;
+        --muted: #aaa1a1;
+        --accent: #b9925e;
+        --danger: #9e4848;
+        --green: #15924f;
+        --red: #b83d3d;
+        --blue: #397bc2;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        background:
+            radial-gradient(circle at top, #302a2a 0, #171515 45%, #100f0f 100%);
+        font-family: Georgia, "Times New Roman", serif;
+    }
+
+    header {
+        padding: 28px 20px 18px;
+        text-align: center;
+        border-bottom: 1px solid #3c3535;
+        background: rgba(15, 14, 14, .8);
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: clamp(28px, 5vw, 48px);
+        letter-spacing: 2px;
+    }
+
+    header p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-family: Arial, sans-serif;
+    }
+
+    main {
+        width: min(1400px, 94%);
+        margin: 24px auto 50px;
+        display: grid;
+        gap: 18px;
+    }
+
+    .panel, .game, .info {
+        background: linear-gradient(145deg, rgba(43,39,39,.96), rgba(28,25,25,.96));
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 12px 35px rgba(0,0,0,.28);
+    }
+
+    .panel {
+        padding: 20px;
+    }
+
+    h2, h3 {
+        margin-top: 0;
+    }
+
+    .setup-grid {
+        display: grid;
+        grid-template-columns: 1.3fr repeat(3, 1fr);
+        gap: 12px;
+        align-items: end;
+    }
+
+    label {
+        display: block;
+        color: #c9c1c1;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    input {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #514848;
+        border-radius: 9px;
+        background: #171515;
+        color: white;
+        outline: none;
+        font-size: 15px;
+    }
+
+    input:focus {
+        border-color: var(--accent);
+    }
+
+    .stat-red input { border-left: 4px solid var(--red); }
+    .stat-green input { border-left: 4px solid var(--green); }
+    .stat-blue input { border-left: 4px solid var(--blue); }
+
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 15px;
+    }
+
+    button {
+        border: 1px solid #665a5a;
+        border-radius: 9px;
+        padding: 10px 14px;
+        color: white;
+        background: #393232;
+        cursor: pointer;
+        font-weight: 700;
+        transition: .15s ease;
+    }
+
+    button:hover {
+        transform: translateY(-1px);
+        background: #4a4141;
+    }
+
+    button.primary {
+        background: #705638;
+        border-color: #99764d;
+    }
+
+    button.danger {
+        background: #6c3434;
+        border-color: #914747;
+    }
+
+    button.green-btn {
+        background: #155f38;
+        border-color: #258b55;
+    }
+
+    button:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .total {
+        margin-top: 13px;
+        color: #d8d0d0;
+        font-family: Arial, sans-serif;
+    }
+
+    .info {
+        padding: 14px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+
+    .info-box {
+        padding: 14px;
+        border-radius: 11px;
+        background: #191717;
+        border: 1px solid #3d3636;
+        text-align: center;
+    }
+
+    .info-box strong {
+        display: block;
+        margin-top: 5px;
+        font-size: 24px;
+    }
+
+    .game {
+        padding: 20px;
+    }
+
+    .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid #3a3333;
+        padding-bottom: 14px;
+    }
+
+    .game-header h2 {
+        margin: 0;
+    }
+
+    .turn {
+        color: var(--muted);
+        font-family: Arial, sans-serif;
+    }
+
+    .table {
+        display: grid;
+        grid-template-columns: 190px 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .deck-zone {
+        min-height: 260px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        border: 1px dashed #514848;
+        border-radius: 14px;
+        background: rgba(0,0,0,.12);
+    }
+
+    .deck {
+        position: relative;
+        width: 125px;
+        height: 175px;
+        cursor: pointer;
+        filter: drop-shadow(7px 9px 5px rgba(0,0,0,.4));
+    }
+
+    .deck::before,
+    .deck::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 13px;
+        background-image: url("Dorso.png");
+        background-size: cover;
+        background-position: center;
+        border: 2px solid #0b0b0b;
+    }
+
+    .deck::before {
+        transform: translate(-7px, 7px);
+        opacity: .75;
+    }
+
+    .deck::after {
+        transform: translate(-3px, 3px);
+        opacity: .9;
+    }
+
+    .deck-face {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        border-radius: 13px;
+        overflow: hidden;
+        border: 2px solid #0b0b0b;
+        background: #201d1d;
+        background-image: url("Dorso.png");
+        background-size: cover;
+        background-position: center;
+    }
+
+    .deck-count {
+        position: absolute;
+        z-index: 5;
+        right: -13px;
+        bottom: -13px;
+        min-width: 38px;
+        height: 38px;
+        padding: 0 7px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: #0e0d0d;
+        border: 2px solid #8b7a67;
+        font-family: Arial, sans-serif;
+        font-weight: 800;
+    }
+
+    .draw-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 10px;
+        padding: 14px 0;
+        border-bottom: 1px solid #393333;
+    }
+
+    .draw-input {
+        width: 110px;
+    }
+
+    .area {
+        margin-top: 20px;
+    }
+
+    .area-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .area-title h3 {
+        margin: 0;
+    }
+
+    .hint {
+        color: var(--muted);
+        font: 12px Arial, sans-serif;
+    }
+
+    .cards {
+        min-height: 205px;
+        padding: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 14px;
+        border-radius: 14px;
+        background:
+            radial-gradient(circle at center, rgba(255,255,255,.035), transparent 65%),
+            #171515;
+        border: 1px solid #373030;
+    }
+
+    .empty {
+        width: 100%;
+        min-height: 170px;
+        display: grid;
+        place-items: center;
+        color: #777070;
+        font-family: Arial, sans-serif;
+    }
+
+    /* CARTAS */
+    .card {
+        width: 130px;
+        height: 182px;
+        perspective: 900px;
+        position: relative;
+        flex: 0 0 auto;
+    }
+
+    .card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform .55s cubic-bezier(.2,.75,.25,1);
+        transform-style: preserve-3d;
+    }
+
+    .card.flipped .card-inner {
+        transform: rotateY(180deg);
+    }
+
+    .card-face {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        border-radius: 13px;
+        overflow: hidden;
+        border: 2px solid #0b0b0b;
+        box-shadow: 0 7px 15px rgba(0,0,0,.4);
+    }
+
+    .card-front {
+        background: #252121;
+    }
+
+    .card-front img,
+    .card-back img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .card-back {
+        transform: rotateY(180deg);
+        background: #171515;
+    }
+
+    .card.selected {
+        transform: translateY(-8px);
+    }
+
+    .card.selected .card-face {
+        box-shadow:
+            0 0 0 3px #e2c38f,
+            0 12px 20px rgba(0,0,0,.55);
+    }
+
+    .card-control {
+        position: absolute;
+        z-index: 20;
+        top: 5px;
+        right: 5px;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border-radius: 50%;
+        background: rgba(0,0,0,.72);
+        border: 1px solid rgba(255,255,255,.35);
+        font-size: 16px;
+    }
+
+    .card-control:hover {
+        background: rgba(0,0,0,.9);
+    }
+
+    .card-label {
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        bottom: 6px;
+        z-index: 10;
+        padding: 5px;
+        border-radius: 6px;
+        background: rgba(0,0,0,.72);
+        color: white;
+        text-align: center;
+        font: 11px Arial, sans-serif;
+        pointer-events: none;
+    }
+
+    .discard-cards .card {
+        width: 105px;
+        height: 147px;
+    }
+
+    .discard-cards .card-control {
+        display: none;
+    }
+
+    .discard-cards .card-label {
+        font-size: 10px;
+    }
+
+    .bottom-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .legend {
+        margin-top: 20px;
+        padding: 13px;
+        border-radius: 10px;
+        background: #191717;
+        border: 1px solid #373030;
+        color: #aaa;
+        font: 12px/1.5 Arial, sans-serif;
+    }
+
+    @media (max-width: 900px) {
+        .setup-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .setup-grid > :first-child {
+            grid-column: 1 / -1;
+        }
+
+        .table {
+            grid-template-columns: 1fr;
+        }
+
+        .deck-zone {
+            min-height: 220px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .setup-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .setup-grid > :first-child {
+            grid-column: auto;
+        }
+
+        .info {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .card {
+            width: 112px;
+            height: 157px;
+        }
+
+        .discard-cards .card {
+            width: 90px;
+            height: 126px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>RPG Card Game</h1>
+    <p>Prototipo del sistema de cartas</p>
+</header>
+
+<main>
+
+    <section class="panel">
+        <h2>Personaje</h2>
+
+        <div class="setup-grid">
+            <div>
+                <label for="characterName">Nombre</label>
+                <input id="characterName" value="Mi Personaje">
+            </div>
+
+            <div class="stat-red">
+                <label for="redStat">🔴 Resistencia</label>
+                <input id="redStat" type="number" min="0" value="12">
+            </div>
+
+            <div class="stat-green">
+                <label for="greenStat">🟢 Destreza</label>
+                <input id="greenStat" type="number" min="0" value="6">
+            </div>
+
+            <div class="stat-blue">
+                <label for="blueStat">🔵 Inteligencia</label>
+                <input id="blueStat" type="number" min="0" value="3">
+            </div>
+        </div>
+
+        <div class="total">
+            Total del mazo: <strong id="total">21</strong> cartas
+        </div>
+
+        <div class="actions">
+            <button class="primary" onclick="crearMazo()">Crear / Actualizar mazo</button>
+            <button onclick="guardar()">Guardar partida</button>
+            <button onclick="cargar()">Cargar partida</button>
+        </div>
+    </section>
+
+    <section class="info">
+        <div class="info-box">🔴 Resistencia<strong id="redInfo">12</strong></div>
+        <div class="info-box">🟢 Destreza<strong id="greenInfo">6</strong></div>
+        <div class="info-box">🔵 Inteligencia<strong id="blueInfo">3</strong></div>
+        <div class="info-box">🃏 En mazo<strong id="deckInfo">21</strong></div>
+    </section>
+
+    <section class="game">
+
+        <div class="game-header">
+            <div>
+                <h2 id="playerName">Mi Personaje</h2>
+                <div class="turn">Turno <strong id="turnInfo">1</strong></div>
+            </div>
+
+            <div class="actions" style="margin-top:0">
+                <button onclick="robarUna()">Robar 1</button>
+                <button onclick="nuevoTurno()">Nuevo turno</button>
+            </div>
+        </div>
+
+        <div class="table">
+
+            <div class="deck-zone">
+                <div class="deck" onclick="robarUna()" title="Robar una carta">
+                    <div class="deck-face">
+                        <span class="deck-count" id="deckCount">21</span>
+                    </div>
+                </div>
+                <strong>Mazo</strong>
+            </div>
+
+            <div>
+
+                <div class="draw-controls">
+                    <div>
+                        <label for="drawAmount">Cartas a robar</label>
+                        <input class="draw-input" id="drawAmount" type="number" min="1" value="5">
+                    </div>
+
+                    <button class="primary" onclick="robarMano()">Robar mano</button>
+                    <button onclick="barajarMazo()">Barajar mazo</button>
+                </div>
+
+                <div class="area">
+                    <div class="area-title">
+                        <h3>Tu mano <span id="handCount">(0)</span></h3>
+                        <span class="hint">Clic en una carta para seleccionarla · ↻ para voltearla</span>
+                    </div>
+
+                    <div id="hand" class="cards">
+                        <div class="empty">Tu mano está vacía.</div>
+                    </div>
+
+                    <div class="bottom-actions">
+                        <button class="green-btn" onclick="usarSeleccionadas()">Usar cartas seleccionadas</button>
+                        <button class="danger" onclick="descartarSeleccionadas()">Descartar seleccionadas</button>
+                        <button onclick="deseleccionarTodas()">Deseleccionar todo</button>
+                    </div>
+                </div>
+
+                <div class="area">
+                    <div class="area-title">
+                        <h3>Descarte <span id="discardCount">(0)</span></h3>
+                        <span class="hint">Las cartas descartadas pueden volver al mazo cuando quieras.</span>
+                    </div>
+
+                    <div id="discard" class="cards discard-cards">
+                        <div class="empty">No hay cartas en el descarte.</div>
+                    </div>
+
+                    <div class="bottom-actions">
+                        <button onclick="devolverDescarte()">↩ Devolver descarte al mazo</button>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <strong>Imágenes actuales:</strong> las cartas verdes usan
+                    <strong>Impetu_verde.png</strong> y el reverso usa <strong>Dorso.png</strong>.
+                    Las cartas rojas y azules muestran un reemplazo temporal hasta que agreguemos
+                    sus imágenes reales.
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script>
+/* =========================================================
+   DATOS DEL JUEGO
+   ========================================================= */
+
+let mazo = [];
+let mano = [];
+let descarte = [];
+let turno = 1;
+let siguienteID = 1;
+
+const colores = {
+    rojo: {
+        nombre: "Resistencia",
+        simbolo: "🔴",
+        clase: "red",
+        imagen: null
+    },
+    verde: {
+        nombre: "Destreza",
+        simbolo: "🟢",
+        clase: "green",
+        imagen: "Impetu_verde.png"
+    },
+    azul: {
+        nombre: "Inteligencia",
+        simbolo: "🔵",
+        clase: "blue",
+        imagen: null
+    }
+};
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+
+function numeroSeguro(id) {
+    const valor = Number(document.getElementById(id).value);
+    return Number.isInteger(valor) && valor >= 0 ? valor : 0;
+}
+
+function actualizarTotal() {
+    const rojo = numeroSeguro("redStat");
+    const verde = numeroSeguro("greenStat");
+    const azul = numeroSeguro("blueStat");
+
+    document.getElementById("total").textContent = rojo + verde + azul;
+}
+
+function barajar() {
+    for (let i = mazo.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [mazo[i], mazo[j]] = [mazo[j], mazo[i]];
+    }
+}
+
+/* =========================================================
+   CREAR / BARAJAR MAZO
+   ========================================================= */
+
+function crearMazo() {
+    const rojo = numeroSeguro("redStat");
+    const verde = numeroSeguro("greenStat");
+    const azul = numeroSeguro("blueStat");
+    const nombre = document.getElementById("characterName").value.trim() || "Mi Personaje";
+
+    mazo = [];
+    mano = [];
+    descarte = [];
+    turno = 1;
+
+    for (let i = 0; i < rojo; i++) {
+        mazo.push({
+            id: siguienteID++,
+            color: "rojo",
+            nombre: "Carta de Resistencia",
+            volteada: false
+        });
+    }
+
+    for (let i = 0; i < verde; i++) {
+        mazo.push({
+            id: siguienteID++,
+            color: "verde",
+            nombre: "Impetu",
+            volteada: false
+        });
+    }
+
+    for (let i = 0; i < azul; i++) {
+        mazo.push({
+            id: siguienteID++,
+            color: "azul",
+            nombre: "Carta de Inteligencia",
+            volteada: false
+        });
+    }
+
+    barajar();
+
+    document.getElementById("playerName").textContent = nombre;
+
+    actualizarInterfaz();
+}
+
+function barajarMazo() {
+    if (mazo.length < 2) {
+        alert("No hay suficientes cartas en el mazo para barajar.");
+        return;
+    }
+
+    barajar();
+    actualizarInterfaz();
+}
+
+/* =========================================================
+   ROBAR
+   ========================================================= */
+
+function robarUna() {
+    if (mazo.length === 0) {
+        alert("El mazo está vacío.");
+        return;
+    }
+
+    const carta = mazo.pop();
+    carta.volteada = false;
+    mano.push(carta);
+
+    actualizarInterfaz();
+}
+
+function robarMano() {
+    let cantidad = Number(document.getElementById("drawAmount").value);
+
+    if (!Number.isInteger(cantidad) || cantidad < 1) {
+        alert("Introduce una cantidad válida de cartas.");
+        return;
+    }
+
+    if (mazo.length === 0) {
+        alert("El mazo está vacío.");
+        return;
+    }
+
+    if (cantidad > mazo.length) {
+        cantidad = mazo.length;
+    }
+
+    for (let i = 0; i < cantidad; i++) {
+        const carta = mazo.pop();
+        carta.volteada = false;
+        mano.push(carta);
+    }
+
+    actualizarInterfaz();
+}
+
+/* =========================================================
+   SELECCIÓN DE CARTAS
+   ========================================================= */
+
+function seleccionarCarta(id) {
+    const carta = mano.find(c => c.id === id);
+    if (!carta) return;
+
+    carta.seleccionada = !carta.seleccionada;
+    actualizarInterfaz();
+}
+
+function deseleccionarTodas() {
+    mano.forEach(carta => carta.seleccionada = false);
+    actualizarInterfaz();
+}
+
+function obtenerSeleccionadas() {
+    return mano.filter(carta => carta.seleccionada);
+}
+
+/* =========================================================
+   VOLTEAR CARTAS
+   ========================================================= */
+
+function voltearCarta(id, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+
+    const carta = mano.find(c => c.id === id);
+    if (!carta) return;
+
+    carta.volteada = !carta.volteada;
+    actualizarInterfaz();
+}
+
+/* =========================================================
+   DESCARTAR / USAR
+   ========================================================= */
+
+function descartarSeleccionadas() {
+    const seleccionadas = obtenerSeleccionadas();
+
+    if (seleccionadas.length === 0) {
+        alert("Selecciona al menos una carta.");
+        return;
+    }
+
+    mano = mano.filter(carta => !carta.seleccionada);
+
+    seleccionadas.forEach(carta => {
+        carta.seleccionada = false;
+        carta.volteada = false;
+        descarte.push(carta);
+    });
+
+    actualizarInterfaz();
+}
+
+function usarSeleccionadas() {
+    const seleccionadas = obtenerSeleccionadas();
+
+    if (seleccionadas.length === 0) {
+        alert("Selecciona al menos una carta.");
+        return;
+    }
+
+    /*
+       TEMPORAL:
+       Por ahora "usar" una carta significa enviarla al descarte.
+       Aquí posteriormente pondremos la lógica real de las acciones,
+       efectos, coste, tiradas, etc.
+    */
+
+    // Representación visual: mostramos los colores en lugar de los nombres.
+    // Ejemplo: "🔴 🟢 🟢 🔵"
+    const coloresUsados = seleccionadas
+        .map(carta => colores[carta.color].simbolo)
+        .join(" ");
+
+    mano = mano.filter(carta => !carta.seleccionada);
+
+    seleccionadas.forEach(carta => {
+        carta.seleccionada = false;
+        carta.volteada = false;
+        descarte.push(carta);
+    });
+
+    actualizarInterfaz();
+
+    alert("Este jugador usó estas cartas:\n\n" + coloresUsados);
+}
+
+/* =========================================================
+   DEVOLVER DESCARTE AL MAZO
+   ========================================================= */
+
+function devolverDescarte() {
+    if (descarte.length === 0) {
+        alert("No hay cartas en el descarte.");
+        return;
+    }
+
+    mazo.push(...descarte);
+
+    descarte = [];
+
+    /*
+       Importante:
+       devolver el descarte NO baraja automáticamente.
+       Puedes presionar "Barajar mazo" después.
+    */
+
+    actualizarInterfaz();
+}
+
+/* =========================================================
+   TURNO
+   ========================================================= */
+
+function nuevoTurno() {
+    turno++;
+    actualizarInterfaz();
+}
+
+/* =========================================================
+   RENDER DE CARTAS
+   ========================================================= */
+
+function obtenerImagenFrente(carta) {
+    if (carta.color === "verde") {
+        return "Impetu_verde.png";
+    }
+
+    return null;
+}
+
+function crearPlaceholder(carta) {
+    const datos = colores[carta.color];
+
+    const wrapper = document.createElement("div");
+    wrapper.style.cssText = `
+        width:100%;
+        height:100%;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        padding:12px;
+        background:linear-gradient(145deg,#332e2e,#181616);
+        color:white;
+        text-align:center;
+        font-family:Arial,sans-serif;
+    `;
+
+    const simbolo = document.createElement("div");
+    simbolo.textContent = datos.simbolo;
+    simbolo.style.fontSize = "38px";
+
+    const nombre = document.createElement("strong");
+    nombre.textContent = datos.nombre;
+    nombre.style.fontSize = "13px";
+
+    const aviso = document.createElement("span");
+    aviso.textContent = "Imagen pendiente";
+    aviso.style.cssText = "font-size:10px;color:#aaa";
+
+    wrapper.append(simbolo, nombre, aviso);
+
+    return wrapper;
+}
+
+function crearCartaVisual(carta, esDescarte = false) {
+    const datos = colores[carta.color];
+
+    const card = document.createElement("div");
+    card.className = "card" + (carta.seleccionada ? " selected" : "") +
+                     (carta.volteada ? " flipped" : "");
+
+    card.dataset.id = carta.id;
+
+    if (!esDescarte) {
+        card.addEventListener("click", () => seleccionarCarta(carta.id));
+    }
+
+    const inner = document.createElement("div");
+    inner.className = "card-inner";
+
+    /* Frente */
+    const front = document.createElement("div");
+    front.className = "card-face card-front";
+
+    const imagen = obtenerImagenFrente(carta);
+
+    if (imagen) {
+        const img = document.createElement("img");
+        img.src = imagen;
+        img.alt = carta.nombre;
+        front.appendChild(img);
+    } else {
+        front.appendChild(crearPlaceholder(carta));
+    }
+
+    const label = document.createElement("div");
+    label.className = "card-label";
+    label.textContent = `${datos.simbolo} ${carta.nombre}`;
+    front.appendChild(label);
+
+    /* Dorso */
+    const back = document.createElement("div");
+    back.className = "card-face card-back";
+
+    const backImg = document.createElement("img");
+    backImg.src = "Dorso.png";
+    backImg.alt = "Dorso de la carta";
+
+    back.appendChild(backImg);
+
+    inner.append(front, back);
+    card.appendChild(inner);
+
+    /* Botón de giro */
+    if (!esDescarte) {
+        const flipButton = document.createElement("button");
+        flipButton.className = "card-control";
+        flipButton.type = "button";
+        flipButton.title = "Voltear carta";
+        flipButton.textContent = "↻";
+        flipButton.addEventListener("click", event => {
+            voltearCarta(carta.id, event);
+        });
+
+        card.appendChild(flipButton);
+    }
+
+    return card;
+}
+
+function renderizarMano() {
+    const contenedor = document.getElementById("hand");
+    contenedor.innerHTML = "";
+
+    if (mano.length === 0) {
+        contenedor.innerHTML = '<div class="empty">Tu mano está vacía.</div>';
+        return;
+    }
+
+    mano.forEach(carta => {
+        contenedor.appendChild(crearCartaVisual(carta));
+    });
+}
+
+function renderizarDescarte() {
+    const contenedor = document.getElementById("discard");
+    contenedor.innerHTML = "";
+
+    if (descarte.length === 0) {
+        contenedor.innerHTML = '<div class="empty">No hay cartas en el descarte.</div>';
+        return;
+    }
+
+    descarte.forEach(carta => {
+        contenedor.appendChild(crearCartaVisual(carta, true));
+    });
+}
+
+/* =========================================================
+   INTERFAZ
+   ========================================================= */
+
+function actualizarInterfaz() {
+    const rojo = numeroSeguro("redStat");
+    const verde = numeroSeguro("greenStat");
+    const azul = numeroSeguro("blueStat");
+
+    document.getElementById("redInfo").textContent = rojo;
+    document.getElementById("greenInfo").textContent = verde;
+    document.getElementById("blueInfo").textContent = azul;
+
+    document.getElementById("deckInfo").textContent = mazo.length;
+    document.getElementById("deckCount").textContent = mazo.length;
+
+    document.getElementById("handCount").textContent = `(${mano.length})`;
+    document.getElementById("discardCount").textContent = `(${descarte.length})`;
+    document.getElementById("turnInfo").textContent = turno;
+
+    actualizarTotal();
+    renderizarMano();
+    renderizarDescarte();
+}
+
+/* =========================================================
+   GUARDAR / CARGAR
+   ========================================================= */
+
+function guardar() {
+    const estado = {
+        mazo,
+        mano,
+        descarte,
+        turno,
+        siguienteID,
+        characterName: document.getElementById("characterName").value,
+        redStat: document.getElementById("redStat").value,
+        greenStat: document.getElementById("greenStat").value,
+        blueStat: document.getElementById("blueStat").value,
+        drawAmount: document.getElementById("drawAmount").value
+    };
+
+    localStorage.setItem("rpgCardGameSave", JSON.stringify(estado));
+
+    alert("Partida guardada en este navegador.");
+}
+
+function cargar() {
+    const guardado = localStorage.getItem("rpgCardGameSave");
+
+    if (!guardado) {
+        alert("No hay ninguna partida guardada.");
+        return;
+    }
+
+    try {
+        const estado = JSON.parse(guardado);
+
+        mazo = estado.mazo || [];
+        mano = estado.mano || [];
+        descarte = estado.descarte || [];
+        turno = estado.turno || 1;
+        siguienteID = estado.siguienteID || 1;
+
+        document.getElementById("characterName").value = estado.characterName || "Mi Personaje";
+        document.getElementById("redStat").value = estado.redStat ?? 12;
+        document.getElementById("greenStat").value = estado.greenStat ?? 6;
+        document.getElementById("blueStat").value = estado.blueStat ?? 3;
+        document.getElementById("drawAmount").value = estado.drawAmount ?? 5;
+
+        document.getElementById("playerName").textContent =
+            document.getElementById("characterName").value || "Mi Personaje";
+
+        actualizarInterfaz();
+
+        alert("Partida cargada.");
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo cargar la partida.");
+    }
+}
+
+/* =========================================================
+   INICIO
+   ========================================================= */
+
+document.getElementById("characterName").addEventListener("input", () => {
+    document.getElementById("playerName").textContent =
+        document.getElementById("characterName").value || "Mi Personaje";
+});
+
+["redStat", "greenStat", "blueStat"].forEach(id => {
+    document.getElementById(id).addEventListener("input", actualizarTotal);
+});
+
+crearMazo();
+</script>
+
+</body>
+</html>
