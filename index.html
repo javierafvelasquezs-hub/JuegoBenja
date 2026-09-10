@@ -652,7 +652,7 @@ const colores = {
         nombre: "Resistencia",
         simbolo: "🔴",
         clase: "red",
-        imagen: null
+        imagen: "Impetu_rojo.png"
     },
     verde: {
         nombre: "Destreza",
@@ -664,7 +664,7 @@ const colores = {
         nombre: "Inteligencia",
         simbolo: "🔵",
         clase: "blue",
-        imagen: null
+        imagen: "Impetu_azul.png"
     }
 };
 
@@ -711,7 +711,7 @@ function crearMazo() {
         mazo.push({
             id: siguienteID++,
             color: "rojo",
-            nombre: "Carta de Resistencia",
+            nombre: "Carta de Fuerza",
             volteada: false
         });
     }
@@ -720,7 +720,7 @@ function crearMazo() {
         mazo.push({
             id: siguienteID++,
             color: "verde",
-            nombre: "Impetu",
+            nombre: "Carta de destreza",
             volteada: false
         });
     }
@@ -925,8 +925,16 @@ function nuevoTurno() {
    ========================================================= */
 
 function obtenerImagenFrente(carta) {
+    if (carta.color === "rojo") {
+        return "Impetu_rojo.png";
+    }
+
     if (carta.color === "verde") {
         return "Impetu_verde.png";
+    }
+
+    if (carta.color === "azul") {
+        return "Impetu_azul.png";
     }
 
     return null;
